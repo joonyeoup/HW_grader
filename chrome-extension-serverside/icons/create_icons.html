@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Extension Icons</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    button { padding: 10px 20px; margin: 5px; background: #667eea; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Icon Generator</h2>
+  <button onclick="createIcon(16)">icon16.png</button>
+  <button onclick="createIcon(48)">icon48.png</button>
+  <button onclick="createIcon(128)">icon128.png</button>
+  <script>
+    function createIcon(s) {
+      const c = document.createElement('canvas');
+      c.width = s; c.height = s;
+      const ctx = c.getContext('2d');
+      const g = ctx.createLinearGradient(0, 0, s, s);
+      g.addColorStop(0, '#667eea'); g.addColorStop(1, '#764ba2');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+      ctx.fillStyle = 'white'; ctx.font = 'bold ' + (s*0.5) + 'px Arial';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('AI', s/2, s/2);
+      const a = document.createElement('a');
+      a.download = 'icon' + s + '.png'; a.href = c.toDataURL(); a.click();
+    }
+  </script>
+</body>
+</html>

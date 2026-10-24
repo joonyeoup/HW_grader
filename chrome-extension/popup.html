@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Gradescope AI Grader</title>
+  <style>
+    body {
+      width: 400px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 0 0 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      font-family: monospace;
+    }
+
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #1976D2;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .status.success {
+      background: #4CAF50;
+      color: white;
+      display: block;
+    }
+
+    .status.error {
+      background: #f44336;
+      color: white;
+      display: block;
+    }
+
+    .status.info {
+      background: #2196F3;
+      color: white;
+      display: block;
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .file-upload {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .file-upload input[type="file"] {
+      flex: 1;
+      font-size: 12px;
+    }
+
+    .shortcuts {
+      background: #f5f5f5;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .shortcuts h3 {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+    }
+
+    .shortcuts ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .shortcuts li {
+      margin-bottom: 4px;
+    }
+
+    .config-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .config-status .indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+
+    .config-status .indicator.active {
+      background: #4CAF50;
+    }
+  </style>
+</head>
+<body>
+  <h1>
+    <span>🤖</span>
+    <span>Gradescope AI Grader</span>
+  </h1>
+
+  <div class="section">
+    <label for="provider">AI Provider *</label>
+    <select id="provider" style="width: 100%; padding: 8px; border: 1px solid #d0d0d0; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+      <option value="openai">OpenAI (GPT-4o)</option>
+      <option value="gemini">Google Gemini (2.5 Pro)</option>
+      <option value="anthropic">Anthropic Claude (Sonnet 4.6 / Opus 4.7)</option>
+    </select>
+    <div class="help-text">Claude Sonnet 4.6 is a strong default for multi-page paper grading without Gemini's thinking-budget pitfalls</div>
+  </div>
+
+  <div class="section">
+    <label for="model">Model *</label>
+    <select id="model" style="width: 100%; padding: 8px; border: 1px solid #d0d0d0; border-radius: 4px; font-size: 14px; box-sizing: border-box;"></select>
+  </div>
+
+  <div class="section">
+    <label for="apiKey"><span id="apiKeyLabel">API Key</span> *</label>
+    <input type="password" id="apiKey" placeholder="sk-proj-... or AIza...">
+    <div class="help-text" id="apiKeyHelp">Your API key is stored locally and never shared</div>
+    <div class="config-status">
+      <div class="indicator" id="apiKeyIndicator"></div>
+      <span id="apiKeyStatus">Not configured</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <label for="rubricText">Rubric Text (Optional)</label>
+    <textarea id="rubricText" placeholder="Paste your rubric text here..."></textarea>
+    <div class="help-text">Provide additional context for grading</div>
+  </div>
+
+  <div class="section">
+    <label>Answer Key / Solution (Optional)</label>
+    <div class="file-upload">
+      <input type="file" id="answerKeyFiles" accept="image/*" multiple>
+    </div>
+    <div class="help-text">Upload answer key as images (PNG, JPG) - AI will compare student work against this</div>
+    <div class="help-text" style="margin-top: 8px; color: #FF9800;">💡 Tip: Convert PDF to images first (e.g., use PDF to PNG converter online)</div>
+    <div id="answerKeyList"></div>
+  </div>
+
+  <div class="section">
+    <button id="saveButton">Save Configuration</button>
+    <div id="statusMessage" class="status"></div>
+  </div>
+
+  <div class="section">
+    <div class="shortcuts">
+      <h3>Keyboard Shortcuts</h3>
+      <ul>
+        <li><strong>Ctrl+Shift+G</strong> - Start AI grading</li>
+        <li><strong>Ctrl+Shift+P</strong> - Pause grading</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3 style="font-size: 14px; margin-bottom: 8px;">How to Use</h3>
+    <ol style="font-size: 12px; color: #666; margin: 0; padding-left: 20px;">
+      <li>Configure your OpenAI API key above</li>
+      <li>Go to Gradescope grading interface</li>
+      <li>Select the question you want to grade</li>
+      <li>Click the "AI Grade All" button that appears</li>
+      <li>Watch as it grades all students automatically!</li>
+    </ol>
+    <div class="help-text" style="margin-top: 10px;">
+      📄 <strong>Multi-page papers:</strong> When the submission shows "page X of Y" with Y &gt; 1
+      (e.g. a research paper or report), the extension automatically navigates every page and sends
+      the full document to the AI for holistic rubric grading. Rubric items beyond the
+      <code>0–9</code> keyboard range are clicked directly.
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

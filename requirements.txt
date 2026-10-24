@@ -1,0 +1,13 @@
+# AI Grading System Requirements
+
+# OpenAI API for GPT-4 Vision
+openai>=1.0.0
+
+# PDF to Image Conversion
+pdf2image>=1.16.0
+
+# Image Processing
+Pillow>=10.0.0
+
+# Environment Variables
+python-dotenv>=1.0.0

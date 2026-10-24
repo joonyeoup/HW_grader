@@ -1,0 +1,16 @@
+{
+  "name": "gradescope-ai-grader-extension",
+  "version": "2.0.0",
+  "description": "Chrome extension for Gradescope AI Grader",
+  "scripts": {
+    "build": "node obfuscate.js",
+    "clean": "rm -rf dist/",
+    "prebuild": "npm run clean && mkdir -p dist"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.0"
+  },
+  "keywords": ["gradescope", "grading", "ai", "chrome-extension"],
+  "author": "",
+  "license": "MIT"
+}
